@@ -1,4 +1,12 @@
 const httpBase = require('http');
+const url = require('url');
+const { fork } = require('child_process');
+const { EventEmitter } = require('events');
+
+const cryptoEvent = new EventEmitter();
+const cryptoProcess = fork('crypto.js');
+
+cryptoProcess.on('message', (msg) => cryptoEvent.emit(msg.type, msg.value))
 
 const initApp = (http) => {
   const endpoints = []
@@ -6,7 +14,7 @@ const initApp = (http) => {
     let found = false
     endpoints.forEach(({ endpoint, cb }) => {
       const [method, url] = endpoint.split(' ')
-      if (method.toUpperCase() == req.method && url === req.url) {
+      if (method.toUpperCase() == req.method && url === req.url.split('?')[0]) {
         found = true
         cb(req, res)
       }
@@ -30,12 +38,17 @@ app.route('GET /health', (req, res) => {
 })
 
 app.route('GET /random-hex', (req, res) => {
-  res.writeHead(200, {'Content-Type': 'text'});
-  const { exec } = require('child_process');
-  // ...
-  res.end('hello');
+  const query = url.parse(req.url,true).query;
+  if (query.length) {
+    res.writeHead(200, {'Content-Type': 'text'});
+    cryptoProcess.send(query.length)
+    cryptoEvent.once(query.length, (result) => res.end(result))
+  } else {
+    res.writeHead(400);
+    res.end();
+  }
 })
 
 app.listen(3000, function(){
-  console.log("server start at port 3000"); //the server object listens on port 3000
+  console.log("server start at port 3000");
  });
