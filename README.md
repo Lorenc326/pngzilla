@@ -12,7 +12,7 @@ REDIS_PORT=6379
 
 ### Build and start application
 ```
-docker-compmose up
+docker-compose up
 ```
 ### Example log output when 20 records are inserted 
 ```
