@@ -1,0 +1,20 @@
+version: '3'
+services:
+  app:
+    build: .
+    volumes:
+      - ".:/app"
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis
+    command:
+      sh -c 'npm i && node ./index.js'
+  redis:
+    image: redis:alpine
+    hostname: redis
+    container_name: redis
+    command:
+      sh -c 'redis-server --appendonly yes'
+    ports: 
+      - 6379:6379
