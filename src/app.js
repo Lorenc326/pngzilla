@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   initApp: http => {
     const endpoints = []
     const server = http.createServer((req, res) => {

@@ -1,13 +1,17 @@
 const crypto = require("crypto");
 
-// some potentially high-loaded sync execution process
-const gen = (length) => crypto.randomBytes(length).toString("hex")
+// some high-loaded sync execution process
+const gen = (length) => {
+  for (let i = 0; i <= 100; i++) {
+    crypto.randomBytes(length).toString("hex")
+  }
+  return crypto.randomBytes(length).toString("hex")
+}
 
-process.on("message", (msg) => {
+process.on("message", ({ key, value }) => {
+  console.log(key, value)
   process.send({
-    value: gen(parseInt(msg)),
-    type: msg
+    result: gen(parseInt(value)),
+    key
   })
 });
-
-
