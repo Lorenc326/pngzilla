@@ -19,11 +19,12 @@ cryptoProcess.on('message', (msg) => {
 })
 
 app.route('POST /heavy-calc', (req, res) => {
-  const value = url.parse(req.url,true).query.length;
+  const value = url.parse(req.url,true).query.number;
   if (value) {
     res.writeHead(204);
     const key = Math.random().toString(36)
     queue.add(key, value, () => {
+      console.log(`added new record to queue: key=${key}, value=${value}`)
       res.end()
     })
   } else {
@@ -33,7 +34,7 @@ app.route('POST /heavy-calc', (req, res) => {
 })
 
 const port = process.env.PORT || 3000;
-const queueTick = 500
+const queueTick = 1000
 
 redis.on('connect', () => {
   app.listen(port, () => {
@@ -43,7 +44,7 @@ redis.on('connect', () => {
       cryptoProcess.send({ key, value })
       return new Promise((resolve) => {
         cryptoEvent.once(key, (result) => {
-          console.log(`${key} is executed by child-process`)
+          console.log(`child-process executed result for ${key}`)
           resolve(result)
         })
       })
