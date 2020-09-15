@@ -1,37 +1,21 @@
-const httpBase = require('http');
+const http = require('http');
 const url = require('url');
 const { fork } = require('child_process');
 const { EventEmitter } = require('events');
 
+const { initApp } = require('src/init-app');
+
 const cryptoEvent = new EventEmitter();
-const cryptoProcess = fork('./src/crypto.js');
+const cryptoProcess = fork('src/crypto.js');
 
 cryptoProcess.on('message', (msg) => cryptoEvent.emit(msg.type, msg.value))
 
-const initApp = (http) => {
-  const endpoints = []
-  const server = http.createServer((req, res) => {
-    let found = false
-    endpoints.forEach(({ endpoint, cb }) => {
-      const [method, url] = endpoint.split(' ')
-      if (method.toUpperCase() == req.method && url === req.url.split('?')[0]) {
-        found = true
-        cb(req, res)
-      }
-    })
-    if (!found) {
-      res.writeHead(404);
-      res.end()
-    }
-  })
+const redis = require('redis');
 
-  return {
-    listen: (...args) => server.listen(...args),
-    route: (endpoint, cb) => endpoints.push({ endpoint, cb })
-  }
-}
+var host = process.env.REDIS_URL || 'redis';
+var client = redis.createClient(6379, host);
 
-const app = initApp(httpBase)
+const app = initApp(http)
 
 app.route('GET /health', (req, res) => {
   res.end('true');
