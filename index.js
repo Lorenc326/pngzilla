@@ -4,7 +4,7 @@ const { fork } = require('child_process');
 const { EventEmitter } = require('events');
 
 const cryptoEvent = new EventEmitter();
-const cryptoProcess = fork('crypto.js');
+const cryptoProcess = fork('./src/crypto.js');
 
 cryptoProcess.on('message', (msg) => cryptoEvent.emit(msg.type, msg.value))
 
@@ -49,6 +49,7 @@ app.route('GET /random-hex', (req, res) => {
   }
 })
 
-app.listen(3000, function(){
-  console.log("server start at port 3000");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`server start at port ${port}`);
  });
